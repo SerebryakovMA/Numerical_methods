@@ -42,9 +42,9 @@ dt = 0.001
 x_0 = 1
 num_x = 1000
 dx = 2*x_0/num_x
-num_t = 10
+num_t = 1000
 u = np.array([math.exp(-10*np.power(x,2)/(num_x**2)) for x in range(-x_0*num_x, x_0*num_x, 1)])
-u_prev = np.array([dt/(2*np.power(dx,2))*1j for x in range(-x_0*num_x, x_0*num_x - 1, 1)])
+u_prev = np.array([dt/(2*np.power(dx,2))*1j for x in range(-x_0*num_x, x_0*num_x, 1)])
 u_i = np.array([1 - dt/(np.power(dx,2))*1j for x in range(-x_0*num_x, x_0*num_x, 1)])
 u_next = u_prev
 
@@ -56,18 +56,24 @@ for t in range(1, num_t):
     u = (sol2(sol1, dt))
     u_list = np.vstack((u_list, u))
 
-u_list = np.real(u_list)
-print(u_list.shape)
-# print(u_list[0, 0])
+#u_list = np.imag(u_list)
 x = [dx*num for num in range(-x_0*num_x, x_0*num_x, 1)]
 t = np.array([dt*num for num in range(num_t)])
 x, t = np.meshgrid(x,t)
 print(x.shape)
+
 fig = plt.figure()
 ax = Axes3D(fig)
+ax.set_xlabel(r"$x$")
+ax.set_ylabel(r"$t$")
+ax.set_zlabel(r"$u(x,t)$")
 
-ax.plot_surface(x, t, u_list)
-plt.savefig("pde_real.pdf")
+ax.plot_surface(x, t, np.real(u_list))
+plt.savefig("pde_pass_real.pdf")
+plt.cla()
+ax.plot_surface(x, t, np.imag(u_list))
+plt.savefig("pde_pass_imag.pdf")
+
 
 u = np.array([[math.exp(-10*np.power(x,2)/(num_x**2)) for x in range(-x_0*num_x, x_0*num_x, 1)]])
 def split_step(u, num_x, num_t, dt, dx, x_0):
@@ -83,8 +89,13 @@ def split_step(u, num_x, num_t, dt, dx, x_0):
 
         u[-1] = np.fft.ifft(u[-1])
     u = np.vstack((u, u[-1]))
+
 u = np.cdouble(u)
 split_step(u, num_x, num_t, dt, dx, x_0)
+
+plt.cla()
 ax.plot_surface(x, t, np.real(u))
-print(u.shape)
-plt.savefig("pde_fft.pdf")
+plt.savefig("pde_fft_real.pdf")
+plt.cla()
+ax.plot_surface(x, t, np.imag(u))
+plt.savefig("pde_fft_imag.pdf")
